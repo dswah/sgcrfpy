@@ -4,10 +4,9 @@ from __future__ import division
 
 from collections import namedtuple
 
-from numba import jit
 import numpy as np
 from numpy import random as rng
-from scipy import *
+# from scipy import *
 from sklearn.base import BaseEstimator
 
 from copy import deepcopy
@@ -115,80 +114,7 @@ class SparseGaussianCRF(BaseEstimator):
         self.alt_newton_coord_descent(X=X, Y=Y)
         return self
 
-    def fit2(self, X, Y):
-        """
-        Fit via coordinate descent just to do a sanity check damnit
-        """
-        n, p, q = self._problem_size(X, Y)
-
-        FixedParams = namedtuple('FixedParams', ['Sxx', 'Sxy', 'Syy'])
-        VariableParams = namedtuple('VariableParams', ['Sigma', 'Psi', 'Gamma'])
-
-        fixed = FixedParams(Sxx=np.dot(X.T, X) / n,
-                            Syy=np.dot(Y.T, Y) / n,
-                            Sxy=np.dot(X.T, Y) / n)
-
-        COV = np.cov(X.T,Y.T)
-        Sxx = COV[:X.shape[1], :X.shape[1]]
-        Syy = COV[X.shape[1]:, X.shape[1]:]
-        Sxy = COV[:X.shape[1], X.shape[1]:]
-        fixed = FixedParams(Sxx=Sxx,
-                            Syy=Syy,
-                            Sxy=Sxy)
-
-        # debugging -------------
-        Sigma = self.covariance
-        R = np.dot(np.dot(X, self.Theta), Sigma) / np.sqrt(n)
-        vary = VariableParams(Sigma=Sigma,
-                              Psi=np.dot(R.T, R),
-                              Gamma=np.dot(np.dot(fixed.Sxx, self.Theta), Sigma))
-
-        print self.neg_log_likelihood(self.Lam, self.Theta, fixed, vary)
-        # ------------------
-
-        from progressbar import ProgressBar
-        pbar = ProgressBar()
-
-        self.nll = []
-        self.lnll = []
-        self.nllwl = []
-        self.lnllwl = []
-        self.lams = []
-        self.thetas = []
-        self.gt = []
-        self.gl = []
-        self.Theta = np.zeros((p, q))
-        self.Lam = np.eye(q)
-
-        for it in pbar(range(self.n_iter)):
-            self.lams.append(self.Lam.copy())
-            self.thetas.append(self.Theta.copy())
-            # update variable params
-            Sigma = self.covariance
-            R = np.dot(np.dot(X, self.Theta), Sigma) / np.sqrt(n)
-            vary = VariableParams(Sigma=Sigma,
-                                  Psi=np.dot(R.T, R),
-                                  Gamma=np.dot(np.dot(fixed.Sxx, self.Theta), Sigma))
-
-            grad_theta = 2 * (fixed.Sxy + np.dot(fixed.Sxx, np.dot(self.Theta, np.linalg.inv(self.Lam))))
-            grad_lam = fixed.Syy - np.linalg.inv(self.Lam) - np.dot(np.linalg.inv(self.Lam), np.dot(self.Theta.T, np.dot(fixed.Sxx, np.dot(self.Theta, np.linalg.inv(self.Lam)))))
-
-            gl, gt = self.check_gradient(fixed, vary)
-            self.gt.append((grad_theta, gt))
-            self.gl.append((grad_lam, gl))
-
-            # updates
-            self.Theta = self.Theta.copy() - self.learning_rate * grad_theta
-            self.Lam = self.Lam.copy() - self.learning_rate * grad_lam
-
-            # self.Theta -= self.learning_rate * self.grad_wrt_Theta(fixed, vary)
-            # self.Lam -= self.learning_rate * self.grad_wrt_Lam(fixed, vary)
-
-            self.nll.append(self.neg_log_likelihood(self.Lam, self.Theta, fixed, vary))
-            self.lnll.append(self.l1_neg_log_likelihood(self.Lam, self.Theta, fixed, vary))
-            self.nllwl.append(self.neg_log_likelihood_wrt_Lam(self.Lam, fixed, vary))
-            self.lnllwl.append(self.l1_neg_log_likelihood_wrt_Lam(self.Lam, fixed, vary))
-
+    
     def loss(self, X, Y, Lam=None, Theta=None):
         if Lam is None:
             Lam = self.Lam
