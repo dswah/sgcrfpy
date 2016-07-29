@@ -18,11 +18,11 @@ def cluster_lambda(q, cluster_size, avg_degree, within_frac, epsilon):
     graph = cluster_graph(q, cluster_size, avg_degree, within_frac)
     tol = 1e-8
     if q < 1e6:
-        min_eig = sparse.linalg.eigsh(graph, k=1, return_eigenvectors=False, which='SM', tol=tol)
+        min_eig = sparse.linalg.eigsh(graph, k=q-1, return_eigenvectors=False, which='SM', tol=tol).min()
     else:
         min_eig = -10
     # maybe epsilon is machine epsilon? np.finfo(np.float32).eps
-    L_diag = (-1 * min_eig + epsilon)[0] * sparse.identity(q)
+    L_diag = (-1 * min_eig + epsilon) * sparse.identity(q)
 
     L = graph + L_diag
 

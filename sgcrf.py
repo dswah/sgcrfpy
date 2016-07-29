@@ -8,6 +8,7 @@ import numpy as np
 from numpy import random as rng
 # from scipy import *
 from sklearn.base import BaseEstimator
+from progressbar import ProgressBar
 
 from copy import deepcopy
 
@@ -114,7 +115,7 @@ class SparseGaussianCRF(BaseEstimator):
         self.alt_newton_coord_descent(X=X, Y=Y)
         return self
 
-    
+
     def loss(self, X, Y, Lam=None, Theta=None):
         if Lam is None:
             Lam = self.Lam
@@ -394,7 +395,7 @@ class SparseGaussianCRF(BaseEstimator):
             # solve theta
             self.Theta = self.theta_coordinate_descent(active_Theta, fixed, vary, max_iter=1)
 
-    def sample(self, X, n=1):
+    def sample(self, X, n=1, verbose=True):
         # Inference in  GCRF given by:
         # p(y|x) = N(-Θ * Λ^-1 * x, Λ^-1)
         Sigma = np.linalg.inv(self.Lam)
@@ -404,8 +405,9 @@ class SparseGaussianCRF(BaseEstimator):
             mean = mean[:,None]
         means = mean
 
+        pbar = ProgressBar()
         samples = []
-        for mean in means.T:
+        for mean in pbar(means.T):
             samples.append(np.random.multivariate_normal(mean, Sigma, n))
         return np.array(samples).squeeze()
 
