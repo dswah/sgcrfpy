@@ -22,7 +22,7 @@ def check_pd(A, lower=True):
     otherwise returns False and None
     """
     try:
-        return True, cho_factor(A, lower=lower)
+        return True, cho_factor(A, lower=lower)[0]
     except LinAlgError as err:
         if 'not positive definite' in str(err):
             return False, None
@@ -38,7 +38,7 @@ def inv(A):
     """
     Inversion of a SPD matrix using Cholesky decomposition.
     """
-    return chol_inv(check_pd(A))
+    return chol_inv(check_pd(A)[1])
 
 def log(x):
     return np.log(x) if x > 0 else -np.inf
