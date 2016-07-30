@@ -203,41 +203,15 @@ class SparseGaussianCRF(BaseEstimator):
                 self.active_set_Theta(fixed, vary))
 
     def active_set_Lam(self, fixed, vary):
-        # TODO
-        # we only need to search over half of the grad matrix,
-        # because it is symmetric
-        # looking at zicos appendixes for this...
-
         grad = self.grad_wrt_Lam(fixed, vary)
         assert np.allclose(grad, grad.T, 1e-3)
-
-        # JK: I think it's faster to just do the broadcasting over the whole matrix
-        # also easier to read, maybe we can later use np.triu_indices_from
-
-        # TODO
-        # DS: Im not totally sold though. checking all indices is twice as many computations.
-        # is that a lot? also maybe the for-loops can speed up with numba?
-        # especially because if we broadcast we're gonna throw away half the results.
-        # return np.where((np.abs(grad) > self.lamL) | (~np.isclose(self.Lam, 0)))
         return np.where((np.abs(np.triu(grad)) > self.lamL) | (self.Lam != 0))
+        # return np.where((np.abs(grad) > self.lamL) | (~np.isclose(self.Lam, 0)))
 
     def active_set_Theta(self, fixed, vary):
         grad = self.grad_wrt_Theta(fixed, vary)
         return np.where((np.abs(grad) > self.lamT) | (self.Theta != 0))
         # return np.where((np.abs(grad) > self.lamT) | (~np.isclose(self.Theta, 0)))
-
-        #TODO
-        # Exploit symmetry!!! we only need to look over one half
-        # but then make the update symmetric
-
-        # NOTE
-        # Zicos paper mentions applyiing l1 regularization to only the off-diagonal elements of Lambda.
-        # how to we make our coord_descent reflect this?
-        # the optimization paper makes no distinction between updating diagonal vs off-diagonals, but Zicos does...
-        # However, looking at eq 9 and 11 in Zicos appendix, the optimizations on u look the same in diagn and off-diag current_channel_phase_low
-        # except for the factor on the lambda_L coefficient. One has the U_ij term
-        # This only changes the value of cLam ??
-
 
     def _problem_size(self, X, Y):
         (n, p), q = X.shape, Y.shape[1]
