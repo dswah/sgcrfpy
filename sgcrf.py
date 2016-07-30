@@ -6,7 +6,7 @@ from collections import namedtuple
 
 import numpy as np
 from numpy import random as rng
-import scipy.linalg import cho_factor, cho_solve, LinAlgError
+from scipy.linalg import cho_factor, cho_solve, LinAlgError
 from sklearn.base import BaseEstimator
 from progressbar import ProgressBar
 
@@ -19,7 +19,7 @@ def check_pd(mat, lower=True):
     try:
         return True, cho_factor(mat, lower=lower)
     except LinAlgError as err:
-        if 'not positive definite' in str(e):
+        if 'not positive definite' in str(err):
             return False, None
 
 def chol_inv(mat, lower=True):
@@ -244,7 +244,7 @@ class SparseGaussianCRF(BaseEstimator):
         return L, alpha
 
     def lambda_newton_direction(self, active, fixed, vary, max_iter=1):
-        delta = self.Lambda # warm start
+        delta = self.Lam # warm start
         U = np.dot(delta, vary.Sigma)
 
         for _ in range(max_iter):
@@ -274,13 +274,13 @@ class SparseGaussianCRF(BaseEstimator):
                     u = soft_thresh(self.lamL / a, c - b/a) - c
                     delta[j, i] += u
                 delta[i, j] += u
-                U[j, :] +=  u * self.vary.Sigma[i, :]
-                U[i, :] +=  u * self.vary.Sigma[j, :]
+                U[j, :] +=  u * vary.Sigma[i, :]
+                U[i, :] +=  u * vary.Sigma[j, :]
 
         return delta
 
     def theta_coordinate_descent(self, active, fixed, vary, max_iter=1):
-        V = np.dot(self.Theta, self.vary.Sigma)
+        V = np.dot(self.Theta, vary.Sigma)
         for _ in range(max_iter):
             for i, j in np.array(active).T:
                 sts = np.dot(np.dot(fixed.Sxx, self.Theta), vary.Sigma)
@@ -290,8 +290,10 @@ class SparseGaussianCRF(BaseEstimator):
 
                 c = self.Theta[i, j]
 
-                self.Theta[i, j] += soft_thresh(self.lamT / a, c - b/a) - c
-                V[i,:] += u * self.vary.Sigma[j,:]
+                u = soft_thresh(self.lamT / a, c - b/a) - c
+
+                self.Theta[i, j] += u
+                V[i,:] += u * vary.Sigma[j,:]
 
         return self.Theta
 
