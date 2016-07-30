@@ -45,12 +45,12 @@ def log(x):
 
 class SparseGaussianCRF(BaseEstimator):
     """
-    GCRF models conditional probability density of x in R^p given y in R^q as
+    GCRF models conditional probability density of y in R^q given x in R^p as
     p(y|x, Λ, Θ) = exp(-y' * Λ * y - 2 * x' * Θ * y) / Z(x)
 
     where Z(x) = c * |Λ|^-1 * exp(x' * Θ * Λ^-1 * Θ' * x)
 
-    Inference in  GCRF gives:
+    This is equivalent to:
     p(y|x) = N(-Θ * Λ^-1 * x, Λ^-1)
 
     Parameters
