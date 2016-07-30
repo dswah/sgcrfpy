@@ -6,7 +6,7 @@ from collections import namedtuple
 
 import numpy as np
 from numpy import random as rng
-# from scipy import *
+import scipy.linalg import cho_factor, cho_solve, LinAlgError
 from sklearn.base import BaseEstimator
 from progressbar import ProgressBar
 
@@ -15,14 +15,15 @@ from copy import deepcopy
 def soft_thresh(r, w):
     return np.sign(w) * np.max(np.abs(w)-r, 0)
 
-def check_pd(mat):
-    # check for positive definiteness via cholesky decomposition
+def check_pd(mat, lower=True):
     try:
-        return True, np.linalg.cholesky(mat)
-    except np.linalg.linalg.LinAlgError as err:
-        if 'Matrix is not positive definite' in err.message:
+        return True, cho_factor(mat, lower=lower)
+    except LinAlgError as err:
+        if 'not positive definite' in str(e):
             return False, None
-    assert 1 == 0
+
+def chol_inv(mat, lower=True):
+    return cho_solve((mat, lower), np.eye(mat.shape[0]))
 
 def log(x):
     return np.log(x) if x > 0 else -np.inf
@@ -249,6 +250,7 @@ class SparseGaussianCRF(BaseEstimator):
         for _ in range(max_iter):
             for i, j in rng.permutation(np.array(active).T):
                 if i > j:
+                    # seems ok since we look for upper triangular indices in active set
                     continue
                 sds = np.dot(np.dot(vary.Sigma, delta), vary.Sigma)
                 pds = np.dot(np.dot(vary.Psi, delta), vary.Sigma)
