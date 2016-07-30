@@ -90,3 +90,33 @@ def sp_rand_sym(rank, density=0.1, format=None, dtype=None, random_state=None):
     density = density / (2.0 - 1.0/rank)
     A = sparse.rand(rank, rank, density=density, format=format, dtype=dtype, random_state=random_state)
     return (A + A.transpose())/2
+
+
+def linear_chain(n, a, b):
+    """
+    Generate a linear chain graph like:
+
+    y1 ---- y2 ---- y3 -...- yn
+     |       |       |        |
+     |       |       |  ...   |
+     |       |       |        |
+    x1      x2      x3  ...  xn
+
+    where <a> describes the conditional dependence between output variables,
+    and <b> describes the relative influence of the input variables on the
+    output variables.
+
+    This is equivalent to nxn Lambda with <1>s along diagonal, and <a>s along
+    super and infra diagonal, and nxn Theta with <a*b> along the diagonal.
+
+    from appendix of
+    Wytock and Kolter 2013
+    Sparse Gaussian CRFs Algorithms Theory and Application
+    """
+    assert a > 0, 'a must be positive'
+    assert b > 0, 'b must be positive'
+
+    L = np.eye(n) + a * (np.diagflat(np.ones(n-1), 1) + np.diagflat(np.ones(n-1), -1))
+    T = a*b * np.eye(n)
+
+    return L, T

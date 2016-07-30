@@ -225,7 +225,7 @@ class SparseGaussianCRF(BaseEstimator):
     def active_set_Theta(self, fixed, vary):
         grad = self.grad_wrt_Theta(fixed, vary)
         # print grad
-        return np.where((np.abs(grad) > self.lamT) | (self.Theta != 0))
+        return np.where((np.abs(np.triu(grad)) > self.lamT) | (self.Theta != 0))
         # return np.where((np.abs(grad) > self.lamT) | (~np.isclose(self.Theta, 0)))
 
         #TODO
