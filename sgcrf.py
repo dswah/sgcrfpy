@@ -15,15 +15,30 @@ from copy import deepcopy
 def soft_thresh(r, w):
     return np.sign(w) * np.max(np.abs(w)-r, 0)
 
-def check_pd(mat, lower=True):
+def check_pd(A, lower=True):
+    """
+    Checks if A is PD.
+    If so returns True and Cholesky decomposition,
+    otherwise returns False and None
+    """
     try:
-        return True, cho_factor(mat, lower=lower)
+        return True, cho_factor(A, lower=lower)
     except LinAlgError as err:
         if 'not positive definite' in str(err):
             return False, None
 
-def chol_inv(mat, lower=True):
-    return cho_solve((mat, lower), np.eye(mat.shape[0]))
+def chol_inv(B, lower=True):
+    """
+    Returns the inverse of matrix A, where A = B*B.T,
+    ie B is the Cholesky decomposition of A.
+    """
+    return cho_solve((B, lower), np.eye(B.shape[0]))
+
+def inv(A):
+    """
+    Inversion of a SPD matrix using Cholesky decomposition.
+    """
+    return chol_inv(check_pd(A))
 
 def log(x):
     return np.log(x) if x > 0 else -np.inf
@@ -247,7 +262,7 @@ class SparseGaussianCRF(BaseEstimator):
         # TODO we should be able to do a warm start...
         # delta = self.Lam # warm start
         delta = np.zeros_like(vary.Sigma)
-        U = np.dot(delta, vary.Sigma)
+        U = np.dot(delta, vary.Sigma) # TODO this multiplication is useless unless we can warm start!
 
         for _ in range(max_iter):
             for i, j in rng.permutation(np.array(active).T):
@@ -382,7 +397,7 @@ class SparseGaussianCRF(BaseEstimator):
     def sample(self, X, n=1, verbose=True):
         # Inference in  GCRF given by:
         # p(y|x) = N(-Θ * Λ^-1 * x, Λ^-1)
-        Sigma = np.linalg.inv(self.Lam)
+        Sigma = inv(self.Lam)
         mean = -np.dot(np.dot(Sigma, self.Theta.T), X.T)
 
         if mean.ndim == 1:
