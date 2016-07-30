@@ -209,7 +209,6 @@ class SparseGaussianCRF(BaseEstimator):
         # looking at zicos appendixes for this...
 
         grad = self.grad_wrt_Lam(fixed, vary)
-        # print grad
         assert np.allclose(grad, grad.T, 1e-3)
 
         # JK: I think it's faster to just do the broadcasting over the whole matrix
@@ -220,12 +219,11 @@ class SparseGaussianCRF(BaseEstimator):
         # is that a lot? also maybe the for-loops can speed up with numba?
         # especially because if we broadcast we're gonna throw away half the results.
         # return np.where((np.abs(grad) > self.lamL) | (~np.isclose(self.Lam, 0)))
-        return np.where((np.abs(grad) > self.lamL) | (self.Lam != 0))
+        return np.where((np.abs(np.triu(grad)) > self.lamL) | (self.Lam != 0))
 
     def active_set_Theta(self, fixed, vary):
         grad = self.grad_wrt_Theta(fixed, vary)
-        # print grad
-        return np.where((np.abs(np.triu(grad)) > self.lamT) | (self.Theta != 0))
+        return np.where((np.abs(grad) > self.lamT) | (self.Theta != 0))
         # return np.where((np.abs(grad) > self.lamT) | (~np.isclose(self.Theta, 0)))
 
         #TODO
@@ -271,8 +269,9 @@ class SparseGaussianCRF(BaseEstimator):
         return L, alpha
 
     def lambda_newton_direction(self, active, fixed, vary, max_iter=1):
-        delta = np.zeros_like(vary.Sigma)
-        # TODO this setup wont work for max_iter > 1 because we are not updating Sigma between iterations
+        delta = self.Lambda # warm start
+        U = np.dot(delta, vary.Sigma)
+
         for _ in range(max_iter):
             for i, j in rng.permutation(np.array(active).T):
                 if i > j:
@@ -288,30 +287,36 @@ class SparseGaussianCRF(BaseEstimator):
                          vary.Sigma[j, j] * vary.Psi[i, i])
 
                 b = (fixed.Syy[i, j] - vary.Sigma[i, j] - vary.Psi[i, j] +
-                     sds[i, j] + pds[i, j] + pds[j, i])
-
-                c = self.Lam[i, j] + delta[i, j]
+                     np.dot(vary.Sigma[i,:], U[:,j]) +
+                     np.dot(vary.Psi[i,:], U[:,j]) +
+                     np.dot(vary.Psi[j,:], U[:,i]))
 
                 if i==j:
                     u = -b/a
                 else:
+                    c = self.Lam[i, j] + delta[i, j]
                     u = soft_thresh(self.lamL / a, c - b/a) - c
                     delta[j, i] += u
                 delta[i, j] += u
+                U[j, :] +=  u * self.vary.Sigma[i, :]
+                U[i, :] +=  u * self.vary.Sigma[j, :]
 
         return delta
 
     def theta_coordinate_descent(self, active, fixed, vary, max_iter=1):
+        V = np.dot(self.Theta, self.vary.Sigma)
         for _ in range(max_iter):
             for i, j in np.array(active).T:
                 sts = np.dot(np.dot(fixed.Sxx, self.Theta), vary.Sigma)
                 a = 2 * vary.Sigma[j, j] * fixed.Sxx[i, i]
 
-                b = 2 * fixed.Sxy[i, j] + 2 * sts[i, j]
+                b = 2 * fixed.Sxy[i, j] + 2 * np.dot(fixed.Sxx[i,:], V[:,j])
 
                 c = self.Theta[i, j]
+
                 self.Theta[i, j] += soft_thresh(self.lamT / a, c - b/a) - c
-                print 'Theta update {}'.format(soft_thresh(self.lamT / a, c - b/a) - c)
+                V[i,:] += u * self.vary.Sigma[j,:]
+
         return self.Theta
 
 
@@ -379,7 +384,6 @@ class SparseGaussianCRF(BaseEstimator):
             learning_rate = self.learning_rate
             L, learning_rate = self.line_search(newton_lambda, fixed, vary)
             self.lrs.append(learning_rate)
-            # print learning_rate
             self.Lam = self.Lam.copy() + learning_rate * newton_lambda
 
             # update variable params
