@@ -244,14 +244,16 @@ class SparseGaussianCRF(BaseEstimator):
         return L, alpha
 
     def lambda_newton_direction(self, active, fixed, vary, max_iter=1):
+        # TODO we should be able to do a warm start...
+        # delta = self.Lam # warm start
         delta = np.zeros_like(vary.Sigma)
-        # TODO this setup wont work for max_iter > 1 because we are not updating Sigma between iterations
+        U = np.dot(delta, vary.Sigma)
+
         for _ in range(max_iter):
             for i, j in rng.permutation(np.array(active).T):
                 if i > j:
+                    # seems ok since we look for upper triangular indices in active set
                     continue
-                sds = np.dot(np.dot(vary.Sigma, delta), vary.Sigma)
-                pds = np.dot(np.dot(vary.Psi, delta), vary.Sigma)
 
                 if i==j:
                     a = vary.Sigma[i,i] ** 2 + 2 * vary.Sigma[i,i] * vary.Psi[i,i]
@@ -261,16 +263,21 @@ class SparseGaussianCRF(BaseEstimator):
                          vary.Sigma[j, j] * vary.Psi[i, i])
 
                 b = (fixed.Syy[i, j] - vary.Sigma[i, j] - vary.Psi[i, j] +
-                     sds[i, j] + pds[i, j] + pds[j, i])
-
-                c = self.Lam[i, j] + delta[i, j]
+                     np.dot(vary.Sigma[i,:], U[:,j]) +
+                     np.dot(vary.Psi[i,:], U[:,j]) +
+                     np.dot(vary.Psi[j,:], U[:,i]))
 
                 if i==j:
                     u = -b/a
+                    delta[i, i] += u
+                    U[i, :] +=  u * vary.Sigma[i, :]
                 else:
+                    c = self.Lam[i, j] + delta[i, j]
                     u = soft_thresh(self.lamL / a, c - b/a) - c
                     delta[j, i] += u
-                delta[i, j] += u
+                    delta[i, j] += u
+                    U[j, :] +=  u * vary.Sigma[i, :]
+                    U[i, :] +=  u * vary.Sigma[j, :]
 
         return delta
 
