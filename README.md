@@ -14,4 +14,11 @@ This is equivalent to:
 
 ![equation](http://latex.codecogs.com/svg.latex?p(y|x)\\sim\\mathcal{N}(\\Theta \\Lambda^{-1}x,\\Lambda^{-1}))
 
+
+<p align="center">
+  <b>
+  <img src="http://latex.codecogs.com/svg.latex?p(y|x)\\sim\\mathcal{N}(\\Theta \\Lambda^{-1}x,\\Lambda^{-1})">
+</p>
+
+
 ![alt tag](https://github.com/dswah/sgcrfpy/blob/master/images/scgrf_random_graph.png)
