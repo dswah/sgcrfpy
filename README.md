@@ -15,7 +15,7 @@ This is equivalent to:
 
 ![equation](http://latex.codecogs.com/svg.latex?p(y|x)\\sim\\mathcal{N}(\\Theta \\Lambda^{-1}x,\\Lambda^{-1}))
 
-In this sense, one can see that `Lambda` models the structure between output variables `y`, while `Theta` models the relationship between `x` and `y`.
+In this sense, `Lambda` models the structure between output variables `y`, while `Theta` models the relationship between `x` and `y`.
 
 Sparse Gaussian CRFs are a particular flavor of Gaussian CRFs where the loss function includes an `L1` penalty in order to promote sparsity among the estimated parameters.
 
