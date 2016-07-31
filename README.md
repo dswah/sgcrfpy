@@ -16,6 +16,8 @@ This is equivalent to:
 
 ![equation](http://latex.codecogs.com/svg.latex?p(y|x)\\sim\\mathcal{N}(\\Theta \\Lambda^{-1}x,\\Lambda^{-1}))
 
+In this sense, one can see that `Lambda` models the structure between output variables `y`, while `Theta` models the relationship between `x` and `y`.
+
 
 The API is easy and familiar and leads to one-liners:
 ```
