@@ -34,9 +34,7 @@ model.fit(X_train, y_train).predict(X_test)
 
 Wytock and Kolter 2013
 
-
 Probabilistic Forecasting using Sparse Gaussian CRFs
-
 http://www.zicokolter.com/wp-content/uploads/2015/10/wytock-cdc13.pdf
 
 
