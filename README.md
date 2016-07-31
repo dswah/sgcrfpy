@@ -3,7 +3,7 @@
 A Gaussian CRF models conditional probability density of y given x as
 
 <p align="center">
-![equation](http://latex.codecogs.com/svg.latex?p(y|x\\Lambda\\Theta) = \\frac{e^{-y^\\top \\Lambda y -2 x^\\top \\Theta y}}{Z(x)})
+  ![equation](http://latex.codecogs.com/svg.latex?p(y|x\\Lambda\\Theta) = \\frac{e^{-y^\\top \\Lambda y -2 x^\\top \\Theta y}}{Z(x)})
 </p>
 
 where
