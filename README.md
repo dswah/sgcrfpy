@@ -5,7 +5,7 @@ A Gaussian CRF models conditional probability density of y given x as
 
 ->![alt tag](http://latex.codecogs.com/svg.latex?p(y|x\\Lambda\\Theta) = \\frac{e^{-y^\\top \\Lambda y -2 x^\\top \\Theta y}}{Z(x)})<-
 
-where
+->where<-
 
 ![equation](http://latex.codecogs.com/svg.latex?Z(x) = c |\\Lambda|^{-1} e^{x^\\top \\Theta \\Lambda ^{-1} \\Theta ^\\top x})
 
