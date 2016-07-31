@@ -38,6 +38,11 @@ Probabilistic Forecasting using Sparse Gaussian CRFs
 http://www.zicokolter.com/wp-content/uploads/2015/10/wytock-cdc13.pdf
 
 
+
+
+
+
+
 Wytock and Kolter 2013
 
 
