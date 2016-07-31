@@ -33,26 +33,38 @@ model.fit(X_train, y_train).predict(X_test)
 ## References
 
 Wytock and Kolter 2013
+
 Probabilistic Forecasting using Sparse Gaussian CRFs
+
 http://www.zicokolter.com/wp-content/uploads/2015/10/wytock-cdc13.pdf
 
 Wytock and Kolter 2013
+
 Sparse Gaussian CRFs Algorithms Theory and Application
+
 https://www.cs.cmu.edu/~mwytock/papers/gcrf_full.pdf
 
 McCarter and Kim 2015
+
 Large-Scale Optimization Algorithms for Sparse CGGMs
+
 http://arxiv.org/pdf/1509.04681.pdf
 
 McCarter and Kim 2016
+
 On Sparse Gaussian Chain Graph Models
+
 (info on Multi-Layer Sparse Gaussian CRFs)
 http://papers.nips.cc/paper/5320-on-sparse-gaussian-chain-graph-models.pdf
 
 Klinger and Tomanek 2007
+
 Classical Probabilistic Models and Conditional Random Fields
+
 http://www.scai.fraunhofer.de/fileadmin/images/bio/data_mining/paper/crf_klinger_tomanek.pdf
 
 Tong Tong Wu and Kenneth Lange 2008
+
 Coordinate Descent Algorithms for Lasso Penalized Regression
+
 http://arxiv.org/pdf/0803.3876.pdf
