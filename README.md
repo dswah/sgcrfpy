@@ -20,7 +20,7 @@ In this sense, one can see that `Lambda` models the structure between output var
 Sparse Gaussian CRFs are a particular flavor of Gaussian CRFs where the loss function includes an `L1` penalty in order to promote sparsity among the estimated parameters.
 
 The API is easy and familiar and leads to one-liners:
-```python 
+```python
 from sgcrf import SparseGaussianCRF
 
 model = SparseGaussianCRF()
@@ -35,17 +35,17 @@ model.fit(X_train, y_train).predict(X_test)
 Wytock and Kolter 2013
 
 
-> Probabilistic Forecasting using Sparse Gaussian CRFs
+Probabilistic Forecasting using Sparse Gaussian CRFs
 
-> http://www.zicokolter.com/wp-content/uploads/2015/10/wytock-cdc13.pdf
+http://www.zicokolter.com/wp-content/uploads/2015/10/wytock-cdc13.pdf
 
 
 Wytock and Kolter 2013
 
 
-> Sparse Gaussian CRFs Algorithms Theory and Application
+Sparse Gaussian CRFs Algorithms Theory and Application
 
-> https://www.cs.cmu.edu/~mwytock/papers/gcrf_full.pdf
+https://www.cs.cmu.edu/~mwytock/papers/gcrf_full.pdf
 
 
 McCarter and Kim 2015
