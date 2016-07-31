@@ -17,7 +17,7 @@ This is equivalent to:
 
 <p align="center">
   <b>
-  <img src="http://latex.codecogs.com/svg.latex?p(y|x)\\sim\\mathcal{N}(\\Theta \\Lambda^{-1}x,\\Lambda^{-1})">
+  <img src="http://latex.codecogs.com/svg.latex?p\(y|x\)\\sim\\mathcal\{N\}\(\\Theta \\Lambda\^\{-1\}x,\\Lambda\^\{-1\}\)">
 </p>
 
 
