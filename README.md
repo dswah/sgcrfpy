@@ -28,7 +28,6 @@ model.fit(X_train, y_train).predict(X_test)
 ```
 
 <img src=https://github.com/dswah/sgcrfpy/blob/master/images/scgrf_random_graph.png height=60% width=60%>
-<\img>
 
 ## References
 
