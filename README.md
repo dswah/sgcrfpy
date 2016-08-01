@@ -51,7 +51,7 @@ http://arxiv.org/pdf/1509.04681.pdf
 
 
 McCarter and Kim 2016  
-On Sparse Gaussian Chain Graph Models (info on Multi-Layer Sparse Gaussian CRFs)  
+On Sparse Gaussian Chain Graph Models  
 http://papers.nips.cc/paper/5320-on-sparse-gaussian-chain-graph-models.pdf
 
 
