@@ -29,7 +29,7 @@ model.fit(X_train, y_train).predict(X_test)
 
 ![alt tag](https://github.com/dswah/sgcrfpy/blob/master/images/scgrf_random_graph.png)
 
-<img src=https://github.com/dswah/sgcrfpy/blob/master/images/scgrf_random_graph.png
+<img src=https://github.com/dswah/sgcrfpy/blob/master/images/scgrf_random_graph.png, height="50%", width="50%"
 <\img>
 
 ## References
