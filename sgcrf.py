@@ -260,9 +260,8 @@ class SparseGaussianCRF(BaseEstimator):
 
     def lambda_newton_direction(self, active, fixed, vary, max_iter=1):
         # TODO we should be able to do a warm start...
-        # delta = self.Lam # warm start
         delta = np.zeros_like(vary.Sigma)
-        U = np.dot(delta, vary.Sigma) # TODO this multiplication is useless unless we can warm start!
+        U = np.zeros_like(vary.Sigma)
 
         for _ in range(max_iter):
             for i, j in rng.permutation(np.array(active).T):
