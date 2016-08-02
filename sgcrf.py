@@ -300,11 +300,8 @@ class SparseGaussianCRF(BaseEstimator):
         V = np.dot(self.Theta, vary.Sigma)
         for _ in range(max_iter):
             for i, j in np.array(active).T:
-                sts = np.dot(np.dot(fixed.Sxx, self.Theta), vary.Sigma)
                 a = 2 * vary.Sigma[j, j] * fixed.Sxx[i, i]
-
                 b = 2 * fixed.Sxy[i, j] + 2 * np.dot(fixed.Sxx[i,:], V[:,j])
-
                 c = self.Theta[i, j]
 
                 u = soft_thresh(self.lamT / a, c - b/a) - c
