@@ -12,8 +12,10 @@ from progressbar import ProgressBar
 
 from copy import deepcopy
 
+
 def soft_thresh(r, w):
     return np.sign(w) * np.max(np.abs(w)-r, 0)
+
 
 def check_pd(A, lower=True):
     """
@@ -27,6 +29,7 @@ def check_pd(A, lower=True):
         if 'not positive definite' in str(err):
             return False, None
 
+
 def chol_inv(B, lower=True):
     """
     Returns the inverse of matrix A, where A = B*B.T,
@@ -34,14 +37,17 @@ def chol_inv(B, lower=True):
     """
     return cho_solve((B, lower), np.eye(B.shape[0]))
 
+
 def inv(A):
     """
     Inversion of a SPD matrix using Cholesky decomposition.
     """
     return chol_inv(check_pd(A)[1])
 
+
 def log(x):
     return np.log(x) if x > 0 else -np.inf
+
 
 class SparseGaussianCRF(BaseEstimator):
     """
@@ -106,12 +112,14 @@ class SparseGaussianCRF(BaseEstimator):
         self.beta = 0.5
         self.slack = 0.05
 
+
     @property
     def covariance(self):
         # TODO inverse is expensive
         # consider using Cholesky decomposition
         # especially if we are already computing it during line searching!
         return np.linalg.inv(self.Lam)
+
 
     def fit(self, X, Y):
         """TODO: Docstring for fit.
@@ -175,22 +183,28 @@ class SparseGaussianCRF(BaseEstimator):
 
 
     def neg_log_likelihood(self, Lam, Theta, fixed, vary):
-        # compute the negative log-likelihood of the GCRF
+        "compute the negative log-likelihood of the GCRF"
         # NOTE it might be cool to keep track of this so that we can do early stopping!!
         return -log(np.linalg.det(Lam)) + \
                 np.trace(np.dot(fixed.Syy, Lam) + \
                 2*np.dot(fixed.Sxy.T, Theta) + \
                 np.dot(vary.Psi, Lam))
 
+
     @staticmethod
     def l1_norm_off_diag(A):
+        "convenience method for l1 norm, excluding diagonal"
         # let's speed this up later
-        return np.linalg.norm(A, ord=1) - np.linalg.norm(A.diagonal(), ord=1)
+        # assume A symmetric, sparse too
+        return np.linalg.norm(A - np.diag(A.diagonal()), ord=1)
+
 
     def l1_neg_log_likelihood(self, Lam, Theta, fixed, vary):
+        "regluarized negative log likelihood"
         return self.neg_log_likelihood( Lam, Theta, fixed, vary) + \
                self.lamL * self.l1_norm_off_diag(Lam) + \
                self.lamT * np.linalg.norm(Theta, ord=1)
+
 
     def neg_log_likelihood_wrt_Lam(self, Lam, fixed, vary):
         # compute the negative log-likelihood of the GCRF when Theta is fixed
@@ -198,10 +212,11 @@ class SparseGaussianCRF(BaseEstimator):
                 np.trace(np.dot(fixed.Syy, Lam) + \
                 np.dot(vary.Psi, Lam))
 
+
     def l1_neg_log_likelihood_wrt_Lam(self, Lam, fixed, vary):
         # regularized neg log loss
         return self.neg_log_likelihood_wrt_Lam(Lam, fixed, vary) + \
-               self.lamL * np.linalg.norm(Lam - Lam.diagonal(), ord=1)
+               self.lamL * np.linalg.norm(Lam - np.diag(Lam.diagonal()), ord=1)
 
     # def neg_log_likelihood_wrt_Theta(self, Theta, fixed, vary):
     #     # compute the negative log-likelihood of the GCRF when Lamba is fixed
@@ -210,13 +225,16 @@ class SparseGaussianCRF(BaseEstimator):
     def grad_wrt_Lam(self, fixed, vary):
         return fixed.Syy - vary.Sigma - vary.Psi
 
+
     def grad_wrt_Theta(self, fixed, vary):
         return 2 * (fixed.Sxy + vary.Gamma)
         # 2 * Sxy + 2* Sxx Theta Sigma
 
+
     def active_set(self, fixed, vary):
         return (self.active_set_Lam(fixed, vary),
                 self.active_set_Theta(fixed, vary))
+
 
     def active_set_Lam(self, fixed, vary):
         grad = self.grad_wrt_Lam(fixed, vary)
@@ -224,14 +242,17 @@ class SparseGaussianCRF(BaseEstimator):
         return np.where((np.abs(np.triu(grad)) > self.lamL) | (self.Lam != 0))
         # return np.where((np.abs(grad) > self.lamL) | (~np.isclose(self.Lam, 0)))
 
+
     def active_set_Theta(self, fixed, vary):
         grad = self.grad_wrt_Theta(fixed, vary)
         return np.where((np.abs(grad) > self.lamT) | (self.Theta != 0))
         # return np.where((np.abs(grad) > self.lamT) | (~np.isclose(self.Theta, 0)))
 
+
     def _problem_size(self, X, Y):
         (n, p), q = X.shape, Y.shape[1]
         return n, p, q
+
 
     def check_descent(self, newton_lambda, alpha, fixed, vary):
         # check if we have made suffcient descent
@@ -241,8 +262,8 @@ class SparseGaussianCRF(BaseEstimator):
 
         nll_a = self.l1_neg_log_likelihood_wrt_Lam(self.Lam + alpha * newton_lambda, fixed, vary)
         nll_b = self.l1_neg_log_likelihood_wrt_Lam(self.Lam, fixed, vary) + alpha * self.slack * DLam
-
         return nll_a <= nll_b
+
 
     def line_search(self, newton_lambda, fixed, vary):
         # returns cholesky decomposition of Lambda and the learning rate
@@ -257,6 +278,7 @@ class SparseGaussianCRF(BaseEstimator):
             # if alpha < 0.1:
             #   return L, alpha
         return L, alpha
+
 
     def lambda_newton_direction(self, active, fixed, vary, max_iter=1):
         # TODO we should be able to do a warm start...
@@ -294,6 +316,7 @@ class SparseGaussianCRF(BaseEstimator):
                     U[i, :] +=  u * vary.Sigma[j, :]
 
         return delta
+
 
     def theta_coordinate_descent(self, active, fixed, vary, max_iter=1):
         V = np.dot(self.Theta, vary.Sigma)
@@ -390,6 +413,7 @@ class SparseGaussianCRF(BaseEstimator):
             # solve theta
             self.Theta = self.theta_coordinate_descent(active_Theta, fixed, vary, max_iter=1)
 
+
     def sample(self, X, n=1, verbose=True):
         # Inference in  GCRF given by:
         # p(y|x) = N(-Θ * Λ^-1 * x, Λ^-1)
@@ -406,14 +430,36 @@ class SparseGaussianCRF(BaseEstimator):
             samples.append(np.random.multivariate_normal(mean, Sigma, n))
         return np.array(samples).squeeze()
 
+
+    def sample2(self, X, n=1, verbose=True):
+        """
+        Draw samples from the conditional probability for y given x.
+
+        Inference in  GCRF given by:
+        p(y|x) = N(-Θ * Λ^-1 * x, Λ^-1)
+        """
+        
+        Sigma = inv(self.Lam)
+        mean = -np.dot(np.dot(Sigma, self.Theta.T), X.T)
+
+        means = np.atleast_2d(mean).T
+        N = means.shape[1] * n
+
+        samples = np.random.multivariate_normal(np.ones(Sigma.shape[0]), Sigma, N)
+        samples += means
+        return samples.squeeze()
+
+
     def predict(self, X, Y):
         pass
+
 
     def get_params(self, deep=True):
         # TODO should we include n_iter of alt newton as a parameter?
         return {'lamL': self.lamL,
                 'lamT': self.lamT,
                 'learning_rate': self.learning_rate}
+
 
     def set_parameters(self, **parameters):
         for parameter, value in parameters.items():
