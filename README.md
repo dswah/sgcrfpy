@@ -19,9 +19,7 @@ which is a reparametrization of standard linear regression [1]
 
 In this sense, `Lambda` models the structure between output variables `y`, while `Theta` models the direct relationships between `x` and `y`. In the case of genetical genomics, a gene network `Lambda` controls how genetic perturbations in `Theta` propagate to indirectly to other gene-expressions traits [1].
 
-Setting `lam L` >> `lam T` results in Lasso, setting `lam T` >> `lam L` results in Graphical Lasso.
-
-Sparse Gaussian CRFs are a particular flavor of Gaussian CRFs where the loss function includes an `L1` penalty in order to promote sparsity among the estimated parameters.
+Sparse Gaussian CRFs are a particular flavor of Gaussian CRFs where the loss function includes an `L1` penalty in order to promote sparsity among the estimated parameters. Setting `lam L` >> `lam T` results in Lasso, setting `lam T` >> `lam L` results in Graphical Lasso.
 
 The API is easy and familiar and leads to one-liners:
 ```python
