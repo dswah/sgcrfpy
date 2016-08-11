@@ -24,7 +24,7 @@ def check_pd(A, lower=True):
     otherwise returns False and None
     """
     try:
-        return True, cho_factor(A, lower=lower)[0]
+        return True, np.tril(cho_factor(A, lower=lower)[0])
     except LinAlgError as err:
         if 'not positive definite' in str(err):
             return False, None
@@ -34,6 +34,9 @@ def chol_inv(B, lower=True):
     """
     Returns the inverse of matrix A, where A = B*B.T,
     ie B is the Cholesky decomposition of A.
+
+    Solves Ax = I
+    given B is the cholesky factorization of A.
     """
     return cho_solve((B, lower), np.eye(B.shape[0]))
 
@@ -119,6 +122,10 @@ class SparseGaussianCRF(BaseEstimator):
         # consider using Cholesky decomposition
         # especially if we are already computing it during line searching!
         return np.linalg.inv(self.Lam)
+
+
+    def get_Sigma_from_chol(self, Lower_Lam):
+        return cho_solve((Lower_Lam, True), np.eye(Lower_Lam.shape[0]))
 
 
     def fit(self, X, Y):
@@ -347,15 +354,6 @@ class SparseGaussianCRF(BaseEstimator):
                             Syy=np.dot(Y.T, Y) / n,
                             Sxy=np.dot(X.T, Y) / n)
 
-        # debugging -------------
-        # Sigma = self.covariance
-        # R = np.dot(np.dot(X, self.Theta), Sigma) / np.sqrt(n)
-        # vary = VariableParams(Sigma=Sigma,
-        #                       Psi=np.dot(R.T, R),
-        #                       Gamma=np.dot(np.dot(fixed.Sxx, self.Theta), Sigma))
-        # print self.neg_log_likelihood(self.Lam, self.Theta, fixed, vary)
-        # ------------------
-
         self.Theta = np.zeros((p, q))
         self.Lam = np.eye(q)
 
@@ -415,39 +413,48 @@ class SparseGaussianCRF(BaseEstimator):
 
 
     def sample(self, X, n=1, verbose=True):
-        # Inference in  GCRF given by:
-        # p(y|x) = N(-Θ * Λ^-1 * x, Λ^-1)
-        Sigma = inv(self.Lam)
-        mean = -np.dot(np.dot(Sigma, self.Theta.T), X.T)
-
-        if mean.ndim == 1:
-            mean = mean[:,None]
-        means = mean
-
-        pbar = ProgressBar()
-        samples = []
-        for mean in pbar(means.T):
-            samples.append(np.random.multivariate_normal(mean, Sigma, n))
-        return np.array(samples).squeeze()
-
-
-    def sample2(self, X, n=1, verbose=True):
         """
         Draw samples from the conditional probability for y given x.
 
         Inference in  GCRF given by:
         p(y|x) = N(-Θ * Λ^-1 * x, Λ^-1)
+
+        This algorithm uses some clever accelerations to generate samples.
+        Inspired by Calvin McCarter[1].
+
+        The idea is to make the desired number of draws from a white multivariate
+        normal distribution, and then multiply these draws by the cholesky
+        decomposition of the desired covariance matrix. This adds the necessary
+        color to the original draws.
+
+        An equivalent thing to do is to multiply the white draws by the inverse of the
+        cholesky decompostition of the desired precision matrix:
+
+        If S is the desired covariance matrix and L, the precision matrix then:
+        S = SL * SL.T # cholesky decomposition
+        L = LL * LL.T # cholesky decomposition
+
+        S = L^-1 # by asssumption, then
+        SL * SL.T = (LL * LL.T)^-1 = LL.T ^-1 * LL ^-1
+
+        Although SL != LL.T^-1, the effective coloring is the same.
+
+        A final acceleration is to solve linear systems of equations instead of
+        explicitly computing matrix inversions.
+
+        [1] https://calvinmccarter.wordpress.com/2015/01/06/multivariate-normal-random-number-generation-in-matlab/
         """
-        
-        Sigma = inv(self.Lam)
-        mean = -np.dot(np.dot(Sigma, self.Theta.T), X.T)
+        LL = np.linalg.cholesky(self.Lam)
+        Sigma = self.get_Sigma_from_chol(LL)
 
-        means = np.atleast_2d(mean).T
-        N = means.shape[1] * n
+        means = -np.dot(np.dot(Sigma, self.Theta.T), X.T)
+        means = np.tile(np.atleast_2d(means), n)
+        N = means.shape[1]
 
-        samples = np.random.multivariate_normal(np.ones(Sigma.shape[0]), Sigma, N)
-        samples += means
-        return samples.squeeze()
+        z = rng.randn(self.Lam.shape[0], N)
+        samples = np.linalg.solve(LL.T, z) + means
+
+        return samples.squeeze().T
 
 
     def predict(self, X, Y):

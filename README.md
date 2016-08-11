@@ -15,7 +15,11 @@ This is equivalent to:
 
 ![equation](http://latex.codecogs.com/svg.latex?p(y|x)\\sim\\mathcal{N}(\\Theta \\Lambda^{-1}x,\\Lambda^{-1}))
 
-In this sense, `Lambda` models the structure between output variables `y`, while `Theta` models the relationship between `x` and `y`.
+which is a reparametrization of standard linear regression [1]
+
+In this sense, `Lambda` models the structure between output variables `y`, while `Theta` models the direct relationships between `x` and `y`. In the case of genetical genomics, a gene network `Lambda` controls how genetic perturbations in `Theta` propagate to indirectly to other gene-expressions traits [1].
+
+Setting `lam L` >> `lam T` results in Lasso, setting `lam T` >> `lam L` results in Graphical Lasso.
 
 Sparse Gaussian CRFs are a particular flavor of Gaussian CRFs where the loss function includes an `L1` penalty in order to promote sparsity among the estimated parameters.
 
