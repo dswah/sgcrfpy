@@ -155,7 +155,7 @@ class SparseGaussianCRF(BaseEstimator):
 
         n, p, q = self._problem_size(X, Y)
         FixedParams = namedtuple('FixedParams', ['Sxx', 'Sxy', 'Syy'])
-        VariableParams = namedtuple('VariableParams', ['Sigma', 'Psi', 'Gamma'])
+        VariableParams = namedtuple('VariableParams', ['Sigma', 'Psi')
 
         fixed = FixedParams(Sxx=np.dot(X.T, X) / n,
                             Syy=np.dot(Y.T, Y) / n,
@@ -163,8 +163,7 @@ class SparseGaussianCRF(BaseEstimator):
         Sigma = self.covariance
         R = np.dot(np.dot(X, self.Theta), Sigma) / np.sqrt(n)
         vary = VariableParams(Sigma=Sigma,
-                              Psi=np.dot(R.T, R),
-                              Gamma=np.dot(np.dot(fixed.Sxx, self.Theta), Sigma))
+                              Psi=np.dot(R.T, R))
         return self.neg_log_likelihood(Lam, Theta, fixed, vary)
 
 
@@ -234,8 +233,9 @@ class SparseGaussianCRF(BaseEstimator):
 
 
     def grad_wrt_Theta(self, fixed, vary):
-        return 2 * (fixed.Sxy + vary.Gamma)
-        # 2 * Sxy + 2* Sxx Theta Sigma
+        # TODO this is not avoiding the Gamma computation!!!
+        # gamma = Sxx Theta Sigma
+        2 * Sxy + 2 * np.dot(Sxx, np.dot(self.Theta, vary.Sigma))
 
 
     def active_set(self, fixed, vary):
@@ -348,7 +348,7 @@ class SparseGaussianCRF(BaseEstimator):
         n, p, q = self._problem_size(X, Y)
 
         FixedParams = namedtuple('FixedParams', ['Sxx', 'Sxy', 'Syy'])
-        VariableParams = namedtuple('VariableParams', ['Sigma', 'Psi', 'Gamma'])
+        VariableParams = namedtuple('VariableParams', ['Sigma', 'Psi'])
 
         fixed = FixedParams(Sxx=np.dot(X.T, X) / n,
                             Syy=np.dot(Y.T, Y) / n,
@@ -376,8 +376,7 @@ class SparseGaussianCRF(BaseEstimator):
             Sigma = self.covariance
             R = np.dot(np.dot(X, self.Theta), Sigma) / np.sqrt(n)
             vary = VariableParams(Sigma=Sigma,
-                                  Psi=np.dot(R.T, R),
-                                  Gamma=np.dot(np.dot(fixed.Sxx, self.Theta), Sigma))
+                                  Psi=np.dot(R.T, R))
 
             self.nll.append(self.neg_log_likelihood(self.Lam, self.Theta, fixed, vary))
 
@@ -402,8 +401,7 @@ class SparseGaussianCRF(BaseEstimator):
             Sigma = self.covariance
             R = np.dot(np.dot(X, self.Theta), Sigma) / np.sqrt(n)
             vary = VariableParams(Sigma=Sigma,
-                                  Psi=np.dot(R.T, R),
-                                  Gamma=np.dot(np.dot(fixed.Sxx, self.Theta), Sigma))
+                                  Psi=np.dot(R.T, R))
 
             # determine active sets
             active_Lam, active_Theta = self.active_set(fixed, vary)
