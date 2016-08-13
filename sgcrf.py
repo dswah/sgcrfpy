@@ -235,7 +235,7 @@ class SparseGaussianCRF(BaseEstimator):
     def grad_wrt_Theta(self, fixed, vary):
         # TODO this is not avoiding the Gamma computation!!!
         # gamma = Sxx Theta Sigma
-        2 * Sxy + 2 * np.dot(Sxx, np.dot(self.Theta, vary.Sigma))
+        2 * fixed.Sxy + 2 * np.dot(fixed.Sxx, np.dot(self.Theta, vary.Sigma))
 
 
     def active_set(self, fixed, vary):
