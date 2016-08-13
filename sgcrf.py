@@ -167,25 +167,25 @@ class SparseGaussianCRF(BaseEstimator):
         return self.neg_log_likelihood(Lam, Theta, fixed, vary)
 
 
-    def check_gradient(self, fixed, vary):
-        grad_lam = np.zeros_like(self.Lam)
-        grad_theta = np.zeros_like(self.Theta)
-        for i in range(self.Lam.shape[0]):
-            for j in range(self.Lam.shape[1]):
-                L = self.Lam.copy()
-                run = 1e-10
-                L[i,j] += run
-                rise = self.neg_log_likelihood(L, self.Theta, fixed, vary) - self.neg_log_likelihood(self.Lam, self.Theta, fixed, vary)
-                grad_lam[i,j] = rise/run
-
-        for i in range(self.Theta.shape[0]):
-            for j in range(self.Theta.shape[1]):
-                T = self.Theta.copy()
-                run = 1e-10
-                T[i,j] += run
-                rise = self.neg_log_likelihood(self.Lam, T, fixed, vary) - self.neg_log_likelihood(self.Lam, self.Theta, fixed, vary)
-                grad_theta[i,j] = rise/run
-        return grad_lam, grad_theta
+    # def check_gradient(self, fixed, vary):
+    #     grad_lam = np.zeros_like(self.Lam)
+    #     grad_theta = np.zeros_like(self.Theta)
+    #     for i in range(self.Lam.shape[0]):
+    #         for j in range(self.Lam.shape[1]):
+    #             L = self.Lam.copy()
+    #             run = 1e-10
+    #             L[i,j] += run
+    #             rise = self.neg_log_likelihood(L, self.Theta, fixed, vary) - self.neg_log_likelihood(self.Lam, self.Theta, fixed, vary)
+    #             grad_lam[i,j] = rise/run
+    #
+    #     for i in range(self.Theta.shape[0]):
+    #         for j in range(self.Theta.shape[1]):
+    #             T = self.Theta.copy()
+    #             run = 1e-10
+    #             T[i,j] += run
+    #             rise = self.neg_log_likelihood(self.Lam, T, fixed, vary) - self.neg_log_likelihood(self.Lam, self.Theta, fixed, vary)
+    #             grad_theta[i,j] = rise/run
+    #     return grad_lam, grad_theta
 
 
     def neg_log_likelihood(self, Lam, Theta, fixed, vary):
@@ -354,42 +354,38 @@ class SparseGaussianCRF(BaseEstimator):
                             Syy=np.dot(Y.T, Y) / n,
                             Sxy=np.dot(X.T, Y) / n)
 
-        self.Theta = np.zeros((p, q))
-        self.Lam = np.eye(q)
+        # allow for continued fitting
+        if self.Lam is None:
+            self.Lam = np.eye(q)
+            Sigma = np.eye(q)
+        else:
+            Sigma = self.covariance
+        if self.Theta is None:
+            self.Theta = np.zeros((p, q))
 
         from progressbar import ProgressBar
         pbar = ProgressBar()
 
         self.nll = []
         self.lnll = []
-        self.nllwl = []
-        self.lnllwl = []
-        self.lams = []
-        self.thetas = []
         self.lrs = []
 
         for it in pbar(range(self.n_iter)):
-            self.lams.append(self.Lam.copy())
-            self.thetas.append(self.Theta.copy())
 
             # update variable params
-            Sigma = self.covariance
+            Sigma = self.covariance # TODO get rid of this
             R = np.dot(np.dot(X, self.Theta), Sigma) / np.sqrt(n)
             vary = VariableParams(Sigma=Sigma,
                                   Psi=np.dot(R.T, R))
 
             self.nll.append(self.neg_log_likelihood(self.Lam, self.Theta, fixed, vary))
-
             self.lnll.append(self.l1_neg_log_likelihood(self.Lam, self.Theta, fixed, vary))
-            self.nllwl.append(self.neg_log_likelihood_wrt_Lam(self.Lam, fixed, vary))
-            self.lnllwl.append(self.l1_neg_log_likelihood_wrt_Lam(self.Lam, fixed, vary))
 
-            # determine active sets
-            active_Lam, active_Theta = self.active_set(fixed, vary)
+            # determine active set
+            active_Lam = self.active_set_Lam(fixed, vary)
 
             # solve D_lambda via coordinate descent
             newton_lambda = self.lambda_newton_direction(active_Lam, fixed, vary, max_iter=1)
-            assert np.allclose(newton_lambda, newton_lambda.T, 1e-3)
 
             # line search for best step size
             learning_rate = self.learning_rate
@@ -403,8 +399,8 @@ class SparseGaussianCRF(BaseEstimator):
             vary = VariableParams(Sigma=Sigma,
                                   Psi=np.dot(R.T, R))
 
-            # determine active sets
-            active_Lam, active_Theta = self.active_set(fixed, vary)
+            # determine active set
+            active_Theta = self.active_set_Theta(fixed, vary)
 
             # solve theta
             self.Theta = self.theta_coordinate_descent(active_Theta, fixed, vary, max_iter=1)
