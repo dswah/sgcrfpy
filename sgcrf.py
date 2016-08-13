@@ -155,7 +155,7 @@ class SparseGaussianCRF(BaseEstimator):
 
         n, p, q = self._problem_size(X, Y)
         FixedParams = namedtuple('FixedParams', ['Sxx', 'Sxy', 'Syy'])
-        VariableParams = namedtuple('VariableParams', ['Sigma', 'Psi')
+        VariableParams = namedtuple('VariableParams', ['Sigma', 'Psi'])
 
         fixed = FixedParams(Sxx=np.dot(X.T, X) / n,
                             Syy=np.dot(Y.T, Y) / n,
