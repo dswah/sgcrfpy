@@ -116,18 +116,6 @@ class SparseGaussianCRF(BaseEstimator):
         self.slack = 0.05
 
 
-    @property
-    def covariance(self):
-        # TODO inverse is expensive
-        # consider using Cholesky decomposition
-        # especially if we are already computing it during line searching!
-        return np.linalg.inv(self.Lam)
-
-
-    def get_Sigma_from_chol(self, Lower_Lam):
-        return cho_solve((Lower_Lam, True), np.eye(Lower_Lam.shape[0]))
-
-
     def fit(self, X, Y):
         """TODO: Docstring for fit.
 
@@ -160,7 +148,7 @@ class SparseGaussianCRF(BaseEstimator):
         fixed = FixedParams(Sxx=np.dot(X.T, X) / n,
                             Syy=np.dot(Y.T, Y) / n,
                             Sxy=np.dot(X.T, Y) / n)
-        Sigma = self.covariance
+        Sigma = inv(Lam)
         R = np.dot(np.dot(X, self.Theta), Sigma) / np.sqrt(n)
         vary = VariableParams(Sigma=Sigma,
                               Psi=np.dot(R.T, R))
@@ -359,21 +347,18 @@ class SparseGaussianCRF(BaseEstimator):
             self.Lam = np.eye(q)
             Sigma = np.eye(q)
         else:
-            Sigma = self.covariance
+            Sigma = inv(self.Lam) # use cholesky decomp then solve system of eqs
         if self.Theta is None:
             self.Theta = np.zeros((p, q))
-
-        from progressbar import ProgressBar
-        pbar = ProgressBar()
 
         self.nll = []
         self.lnll = []
         self.lrs = []
-
+        from progressbar import ProgressBar
+        pbar = ProgressBar()
         for it in pbar(range(self.n_iter)):
 
             # update variable params
-            Sigma = self.covariance # TODO get rid of this
             R = np.dot(np.dot(X, self.Theta), Sigma) / np.sqrt(n)
             vary = VariableParams(Sigma=Sigma,
                                   Psi=np.dot(R.T, R))
@@ -389,15 +374,13 @@ class SparseGaussianCRF(BaseEstimator):
 
             # line search for best step size
             learning_rate = self.learning_rate
-            L, learning_rate = self.line_search(newton_lambda, fixed, vary)
+            LL, learning_rate = self.line_search(newton_lambda, fixed, vary)
             self.lrs.append(learning_rate)
             self.Lam = self.Lam.copy() + learning_rate * newton_lambda
 
             # update variable params
-            Sigma = self.covariance
-            R = np.dot(np.dot(X, self.Theta), Sigma) / np.sqrt(n)
-            vary = VariableParams(Sigma=Sigma,
-                                  Psi=np.dot(R.T, R))
+            Sigma = chol_inv(LL) # use chol decomp from the backtracking
+            vary = VariableParams(Sigma=Sigma) # dont need psi here
 
             # determine active set
             active_Theta = self.active_set_Theta(fixed, vary)
@@ -439,7 +422,7 @@ class SparseGaussianCRF(BaseEstimator):
         [1] https://calvinmccarter.wordpress.com/2015/01/06/multivariate-normal-random-number-generation-in-matlab/
         """
         LL = np.linalg.cholesky(self.Lam)
-        Sigma = self.get_Sigma_from_chol(LL)
+        Sigma = chol_inv(LL)
 
         means = -np.dot(np.dot(Sigma, self.Theta.T), X.T)
         means = np.tile(np.atleast_2d(means), n)
