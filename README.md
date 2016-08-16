@@ -13,7 +13,7 @@ where
 
 This is equivalent to:
 
-![equation](http://latex.codecogs.com/svg.latex?p(y|x)\\sim\\mathcal{N}(\\Theta \\Lambda^{-1}x,\\Lambda^{-1}))
+![equation](http://latex.codecogs.com/svg.latex?y|x\\sim\\mathcal{N}(\\Theta \\Lambda^{-1}x,\\Lambda^{-1}))
 
 which is a reparametrization of standard linear regression [1]
 

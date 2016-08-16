@@ -152,7 +152,7 @@ class SparseGaussianCRF(BaseEstimator):
         R = np.dot(np.dot(X, self.Theta), Sigma) / np.sqrt(n)
         vary = VariableParams(Sigma=Sigma,
                               Psi=np.dot(R.T, R))
-        return self.neg_log_likelihood(Lam, Theta, fixed, vary)
+        return self.l1_neg_log_likelihood(Lam, Theta, fixed, vary)
 
 
     # def check_gradient(self, fixed, vary):
@@ -178,7 +178,6 @@ class SparseGaussianCRF(BaseEstimator):
 
     def neg_log_likelihood(self, Lam, Theta, fixed, vary):
         "compute the negative log-likelihood of the GCRF"
-        # NOTE it might be cool to keep track of this so that we can do early stopping!!
         return -log(np.linalg.det(Lam)) + \
                 np.trace(np.dot(fixed.Syy, Lam) + \
                 2*np.dot(fixed.Sxy.T, Theta) + \
@@ -260,12 +259,25 @@ class SparseGaussianCRF(BaseEstimator):
         return nll_a <= nll_b
 
 
+    def check_descent2(self, newton_lambda, alpha, fixed, vary):
+
+        lhs = self.l1_neg_log_likelihood(self.Lam + alpha*newton_lambda, self.Theta, fixed, vary)
+
+        mu = np.trace(np.dot(self.grad_wrt_Lam(fixed, vary), newton_lambda)) + \
+             self.lamL*self.l1_norm_off_diag(self.Lam + newton_lambda) +\
+             self.lamT*np.linalg.norm(self.Theta, ord=1)
+
+        rhs = self.neg_log_likelihood(self.Lam, self.Theta, fixed, vary) +\
+              alpha * self.slack * mu
+        print '2'
+        return lhs <= rhs
+
     def line_search(self, newton_lambda, fixed, vary):
         # returns cholesky decomposition of Lambda and the learning rate
         alpha = self.learning_rate
         while True:
             pd, L = check_pd(self.Lam + alpha * newton_lambda)
-            if pd and self.check_descent(newton_lambda, alpha, fixed, vary):
+            if pd and self.check_descent2(newton_lambda, alpha, fixed, vary):
                 # step is positive definite and we have sufficient descent
                 break
                 #TODO maybe want to return newt+alpha, to reuse computation
