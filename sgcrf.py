@@ -269,7 +269,6 @@ class SparseGaussianCRF(BaseEstimator):
 
         rhs = self.neg_log_likelihood(self.Lam, self.Theta, fixed, vary) +\
               alpha * self.slack * mu
-        print '2'
         return lhs <= rhs
 
     def line_search(self, newton_lambda, fixed, vary):
