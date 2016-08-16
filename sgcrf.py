@@ -380,7 +380,8 @@ class SparseGaussianCRF(BaseEstimator):
 
             # update variable params
             Sigma = chol_inv(LL) # use chol decomp from the backtracking
-            vary = VariableParams(Sigma=Sigma) # dont need psi here
+            vary = VariableParams(Sigma=Sigma,
+                                  Psi=None) # dont need psi here
 
             # determine active set
             active_Theta = self.active_set_Theta(fixed, vary)
