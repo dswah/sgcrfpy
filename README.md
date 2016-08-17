@@ -40,9 +40,10 @@ X = np.random.randn(1, 50)
 y = model.sample(X, n=100000)
 ```
 
-The api is inspired by keras which allows continued model training, so you can inspect your model...
+The api is inspired by Keras which allows continued model training, so you can inspect your model...
 
 ```python
+model.n_iter = 5
 model.learning_rate = 0.1
 model.fit(X_train, y_train)
 loss = model.lnll
