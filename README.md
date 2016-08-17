@@ -60,12 +60,12 @@ plt.plot(loss)
 <img src=images/training_b.png height=60% width=60%>
 
 ## Optimization Details
-Optimization is performed via alternating Newton coordinate descent of the regularized negative log-likelihood [4],  which significantly reduces the computation time compared to previous methods [1][2][3]. Optimization iterates between  estimating `Lambda` given `Theta` using a second-order aproximation to the objective, and then estimating `Theta` given `Lambda`, which requires no Taylor series approximation.
+Optimization is performed via alternating Newton coordinate descent of the regularized negative log-likelihood [4],  which significantly reduces the computation time compared to previous methods [1][2][3]. The optimization alternates between updating `Lambda` given `Theta` using a second-order approximation to the objective, and then updating `Theta` given `Lambda`, which requires no Taylor series approximation.
 
 Notable features:  
 
 - Newton steps are solved via **coordinate descent** because the problem includes an `L1` penalty.
-- Parameter updates are restricted to an **active set** of variables which produces a substantial speedup for sparse problems. 
+- Parameter updates are restricted to an **active set** of variables which produces a substantial speedup for sparse problems.
 - Frequently used large matrix products are **cached**, and only their rows and columns are updated after coordinate descent updates.
 - The step size for `Lambda` is chosen via **line search**.
 
