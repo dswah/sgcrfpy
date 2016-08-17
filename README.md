@@ -88,7 +88,7 @@ https://www.cs.cmu.edu/~mwytock/papers/gcrf_full.pdf
 
 0. McCarter and Kim 2015  
 Large-Scale Optimization Algorithms for Sparse CGGMs  
-http://arxiv.org/pdf/1509.04681.pdf
+http://www.jmlr.org/proceedings/papers/v51/mccarter16.pdf
 
 
 0. McCarter and Kim 2016  
