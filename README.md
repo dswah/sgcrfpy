@@ -1,7 +1,7 @@
 # SGCRFpy:
 ## Sparse Gaussian Conditional Random Fields in Python
 
-SGCRFpy is a Python implementation of Sparse Gaussian Conditional Random Fields (CRF) with a familiar API. CRFs are discriminative models that are useful for performing inference when output variables are known to obey a structure across time, space, or some other dimension.
+SGCRFpy is a Python implementation of Sparse Gaussian Conditional Random Fields (CRF) with a familiar API. CRFs are discriminative graphical models that are useful for performing inference when output variables are known to obey a structure.
 
 A Gaussian CRF models the conditional probability density of `y` given `x` as
 
@@ -17,9 +17,9 @@ This is equivalent to:
 
 which is a reparametrization of standard linear regression [1]
 
-In this sense, `Lambda` models the structure between output variables `y`, while `Theta` models the direct relationships between `x` and `y`. In the case of genetical genomics, a gene network `Lambda` controls how genetic perturbations in `Theta` propagate indirectly to other gene-expressions traits [1].
+In this sense, `Lambda` models the structure between output variables `y`, while `Theta` models the direct relationships between `x` and `y`. For example, in genetical genomics, a gene network `Lambda` controls how genetic perturbations in `Theta` propagate indirectly to other gene-expression traits [1]. In wind-farm power forecasting, `Lambda` models the spatial and temporal correlations between various generators, while `Theta` captures the dependencies on exogenous variables [2].
 
-Sparse Gaussian CRFs are a particular flavor of Gaussian CRFs where the loss function includes an `L1` penalty in order to promote sparsity among the estimated parameters. Setting `lam L` >> `lam T` results in Lasso regression, setting `lam T` >> `lam L` results in Graphical Lasso.
+Sparse Gaussian CRFs are a particular flavor of Gaussian CRFs where the loss function includes an `L1` penalty in order to promote sparsity among the estimated parameters. Setting `lam L` >> `lam T` results in Lasso regression, while setting `lam T` >> `lam L` results in Graphical Lasso.
 
 <img src=images/random_graph.png height=70% width=70%>
 
@@ -58,6 +58,17 @@ loss += model.lnll
 plt.plot(loss)
 ```
 <img src=images/training_b.png height=60% width=60%>
+
+## Optimization Details
+Optimization is performed via alternating Newton coordinate descent of the regularized negative log-likelihood [4],  which significantly reduces the computation time compared to previous methods [1][2][3]. Optimization iterates between  estimating `Lambda` given `Theta` using a second-order aproximation to the objective, and then estimating `Theta` given `Lambda`, which requires no Taylor series approximation.
+
+Notable Features:  
+
+- Newton steps are solved via **coordinate descent** because the problem includes an `L1` penalty.
+- Parameter updates are restricted to an **active set** of variables which produces a substantial speedup for sparse problems. 
+- Frequently used large matrix products are **cached**, and only their rows and columns are updated after coordinate descent updates.
+- The step size for `Lambda` is chosen via **line search**.
+
 
 ## References
 0. Lingxue Zhang, Seyoung Kim 2014  
