@@ -33,14 +33,13 @@ model = SparseGaussianCRF()
 model.fit(X_train, Y_train).predict(X_test)
 ```
 
-Since the model is probabilistic, it's also easy to generate lots of samples:
+Since the model is probabilistic, it's also easy to generate lots of samples of `y` given `x`:
 
 ```python
-X = np.random.randn(1, 50)
 Y = model.sample(X, n=100000)
 ```
 
-The api is inspired by Keras which allows continued model training, so you can inspect your model...
+The API is inspired by Keras which allows continued model training, so you can inspect your model...
 
 ```python
 model.set_params(learning_rate=0.1, n_iter=5)
