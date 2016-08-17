@@ -21,7 +21,11 @@ In this sense, `Lambda` models the structure between output variables `y`, while
 
 Sparse Gaussian CRFs are a particular flavor of Gaussian CRFs where the loss function includes an `L1` penalty in order to promote sparsity among the estimated parameters. Setting `lam L` >> `lam T` results in Lasso regression, setting `lam T` >> `lam L` results in Graphical Lasso.
 
-The API is easy and familiar and leads to one-liners:
+<img src=https://github.com/dswah/sgcrfpy/blob/master/images/random_graph.png height=60% width=60%>
+
+## API
+The API is simple and familiar and leads to one-liners:
+
 ```python
 from sgcrf import SparseGaussianCRF
 
@@ -29,7 +33,32 @@ model = SparseGaussianCRF()
 model.fit(X_train, y_train).predict(X_test)
 ```
 
-<img src=https://github.com/dswah/sgcrfpy/blob/master/images/random_graph.png height=60% width=60%>
+Since the model is probabilistic, it's also easy to generate lots of samples:
+
+```python
+X = np.random.randn(1, 50)
+y = model.sample(X, n=100000)
+```
+
+The api is inspired by keras which allows continued model training, so you can inspect your model...
+
+```python
+model.learning_rate = 0.1
+model.fit(X_train, y_train)
+loss = model.lnll
+plt.plot(loss)
+```
+<img src=images/training_a.png height=90% width=90%>
+
+...and pick up where you left off:
+
+```python
+model.learning_rate = 1
+model.fit(X_train, y_train)
+loss += model.lnll
+plt.plot(loss)
+```
+<img src=images/training_b.png height=90% width=90%>
 
 ## References
 Lingxue Zhang, Seyoung Kim 2014  
