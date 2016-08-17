@@ -17,7 +17,7 @@ This is equivalent to:
 
 which is a reparametrization of standard linear regression [1]
 
-In this sense, `Lambda` models the structure between output variables `y`, while `Theta` models the direct relationships between `x` and `y`. For example, in genetical genomics, a gene network `Lambda` controls how genetic perturbations in `Theta` propagate indirectly to other gene-expression traits [1]. In wind-farm power forecasting, `Lambda` models the spatial and temporal correlations between various generators, while `Theta` captures the dependencies on exogenous variables [2].
+In this sense, `Lambda` models the structure between output variables `y`, while `Theta` models the direct relationships between `x` and `y`. For example, in genetical genomics, a gene network `Lambda` controls how genetic perturbations in `Theta` propagate indirectly to other gene-expression traits [1]. In wind-farm power forecasting, `Lambda` models the spatial and temporal correlations between various generators, while `Theta` captures the conditional dependencies on exogenous variables [2].
 
 Sparse Gaussian CRFs are a particular flavor of Gaussian CRFs where the loss function includes an `L1` penalty in order to promote sparsity among the estimated parameters. Setting `lam L` >> `lam T` results in Lasso regression, while setting `lam T` >> `lam L` results in Graphical Lasso.
 
@@ -39,7 +39,7 @@ Since the model is probabilistic, it's also easy to generate lots of samples of 
 Y = model.sample(X, n=100000)
 ```
 
-The API is inspired by Keras which allows continued model training, so you can inspect your model...
+The API is inspired by [Keras](https://github.com/fchollet/keras) which allows continued model training, so you can inspect your model...
 
 ```python
 model.set_params(learning_rate=0.1, n_iter=5)
