@@ -62,7 +62,7 @@ plt.plot(loss)
 ## Optimization Details
 Optimization is performed via alternating Newton coordinate descent of the regularized negative log-likelihood [4],  which significantly reduces the computation time compared to previous methods [1][2][3]. Optimization iterates between  estimating `Lambda` given `Theta` using a second-order aproximation to the objective, and then estimating `Theta` given `Lambda`, which requires no Taylor series approximation.
 
-Notable Features:  
+Notable features:  
 
 - Newton steps are solved via **coordinate descent** because the problem includes an `L1` penalty.
 - Parameter updates are restricted to an **active set** of variables which produces a substantial speedup for sparse problems. 
