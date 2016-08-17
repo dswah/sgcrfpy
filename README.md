@@ -21,7 +21,7 @@ In this sense, `Lambda` models the structure between output variables `y`, while
 
 Sparse Gaussian CRFs are a particular flavor of Gaussian CRFs where the loss function includes an `L1` penalty in order to promote sparsity among the estimated parameters. Setting `lam L` >> `lam T` results in Lasso regression, setting `lam T` >> `lam L` results in Graphical Lasso.
 
-<img src=images/random_graph.png height=90% width=90%>
+<img src=images/random_graph.png height=80% width=80%>
 
 ## API
 The API is simple and familiar and leads to one-liners:
@@ -48,7 +48,7 @@ model.fit(X_train, y_train)
 loss = model.lnll
 plt.plot(loss)
 ```
-<img src=images/training_a.png height=90% width=90%>
+<img src=images/training_a.png height=80% width=80%>
 
 ...and pick up where you left off:
 
@@ -58,7 +58,7 @@ model.fit(X_train, y_train)
 loss += model.lnll
 plt.plot(loss)
 ```
-<img src=images/training_b.png height=90% width=90%>
+<img src=images/training_b.png height=80% width=80%>
 
 ## References
 Lingxue Zhang, Seyoung Kim 2014  
