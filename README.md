@@ -43,8 +43,7 @@ y = model.sample(X, n=100000)
 The api is inspired by Keras which allows continued model training, so you can inspect your model...
 
 ```python
-model.n_iter = 5
-model.learning_rate = 0.1
+model.set_params(learning_rate=0.1, n_iter=5)
 model.fit(X_train, y_train)
 loss = model.lnll
 plt.plot(loss)
@@ -54,7 +53,7 @@ plt.plot(loss)
 ...and pick up where you left off:
 
 ```python
-model.learning_rate = 1
+model.set_params(learning_rate=1)
 model.fit(X_train, y_train)
 loss += model.lnll
 plt.plot(loss)

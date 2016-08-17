@@ -276,7 +276,7 @@ class SparseGaussianCRF(BaseEstimator):
         alpha = self.learning_rate
         while True:
             pd, L = check_pd(self.Lam + alpha * newton_lambda)
-            if pd and self.check_descent2(newton_lambda, alpha, fixed, vary):
+            if pd and self.check_descent(newton_lambda, alpha, fixed, vary):
                 # step is positive definite and we have sufficient descent
                 break
                 #TODO maybe want to return newt+alpha, to reuse computation
@@ -447,16 +447,17 @@ class SparseGaussianCRF(BaseEstimator):
 
 
     def predict(self, X, Y):
+
         pass
 
 
     def get_params(self, deep=True):
-        # TODO should we include n_iter of alt newton as a parameter?
         return {'lamL': self.lamL,
                 'lamT': self.lamT,
-                'learning_rate': self.learning_rate}
+                'learning_rate': self.learning_rate,
+                'n_iter': self.n_iter}
 
 
-    def set_parameters(self, **parameters):
+    def set_params(self, **parameters):
         for parameter, value in parameters.items():
             self.setattr(parameter, value)
