@@ -406,7 +406,7 @@ class SparseGaussianCRF(BaseEstimator):
         Draw samples from the conditional probability for y given x.
 
         Inference in  GCRF given by:
-        p(y|x) = N(-Θ * Λ^-1 * x, Λ^-1)
+        y|x ~ N(-Θ * Λ^-1 * x, Λ^-1)
 
         This algorithm uses some clever accelerations to generate samples.
         Inspired by Calvin McCarter[1].
@@ -446,9 +446,17 @@ class SparseGaussianCRF(BaseEstimator):
         return samples.squeeze().T
 
 
-    def predict(self, X, Y):
+    def predict(self, X, Y=None):
+        """
+        Return the mean of y given x.
 
-        pass
+        Inference in  GCRF given by:
+        y|x ~ N(-Θ * Λ^-1 * x, Λ^-1)
+
+        so this method returns:
+        -Θ * Λ^-1 * x
+        """
+        return -np.dot(np.dot(inv(self.Lam), self.Theta.T), X.T).T
 
 
     def get_params(self, deep=True):

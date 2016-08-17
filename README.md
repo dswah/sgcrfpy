@@ -1,7 +1,7 @@
 # SGCRFpy:
 ## Sparse Gaussian Conditional Random Fields in Python
 
-SGCRFpy is a Python implementation of Sparse Gaussian Conditional Random Fields (CRF) with a familiar API. CRFs are discriminative models that are useful for performing inference where output variables are known to obey a structure.
+SGCRFpy is a Python implementation of Sparse Gaussian Conditional Random Fields (CRF) with a familiar API. CRFs are discriminative models that are useful for performing inference when output variables are known to obey a structure across time, space, or some other dimension.
 
 A Gaussian CRF models the conditional probability density of `y` given `x` as
 
@@ -30,21 +30,21 @@ The API is simple and familiar and leads to one-liners:
 from sgcrf import SparseGaussianCRF
 
 model = SparseGaussianCRF()
-model.fit(X_train, y_train).predict(X_test)
+model.fit(X_train, Y_train).predict(X_test)
 ```
 
 Since the model is probabilistic, it's also easy to generate lots of samples:
 
 ```python
 X = np.random.randn(1, 50)
-y = model.sample(X, n=100000)
+Y = model.sample(X, n=100000)
 ```
 
 The api is inspired by Keras which allows continued model training, so you can inspect your model...
 
 ```python
 model.set_params(learning_rate=0.1, n_iter=5)
-model.fit(X_train, y_train)
+model.fit(X_train, Y_train)
 loss = model.lnll
 plt.plot(loss)
 ```
@@ -54,43 +54,43 @@ plt.plot(loss)
 
 ```python
 model.set_params(learning_rate=1)
-model.fit(X_train, y_train)
+model.fit(X_train, Y_train)
 loss += model.lnll
 plt.plot(loss)
 ```
 <img src=images/training_b.png height=60% width=60%>
 
 ## References
-Lingxue Zhang, Seyoung Kim 2014  
+0. Lingxue Zhang, Seyoung Kim 2014  
 Learning Gene Networks under SNP Perturbations Using eQTL Datasets  
 http://journals.plos.org/ploscompbiol/article?id=10.1371/journal.pcbi.1003420
 
 
-Wytock and Kolter 2013  
+0. Wytock and Kolter 2013  
 Probabilistic Forecasting using Sparse Gaussian CRFs  
 http://www.zicokolter.com/wp-content/uploads/2015/10/wytock-cdc13.pdf
 
 
-Wytock and Kolter 2013  
+0. Wytock and Kolter 2013  
 Sparse Gaussian CRFs Algorithms Theory and Application  
 https://www.cs.cmu.edu/~mwytock/papers/gcrf_full.pdf
 
 
-McCarter and Kim 2015  
+0. McCarter and Kim 2015  
 Large-Scale Optimization Algorithms for Sparse CGGMs  
 http://arxiv.org/pdf/1509.04681.pdf
 
 
-McCarter and Kim 2016  
+0. McCarter and Kim 2016  
 On Sparse Gaussian Chain Graph Models  
 http://papers.nips.cc/paper/5320-on-sparse-gaussian-chain-graph-models.pdf
 
 
-Klinger and Tomanek 2007  
+0. Klinger and Tomanek 2007  
 Classical Probabilistic Models and Conditional Random Fields  
 http://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.140.4527&rep=rep1&type=pdf
 
 
-Tong Tong Wu and Kenneth Lange 2008  
+0. Tong Tong Wu and Kenneth Lange 2008  
 Coordinate Descent Algorithms for Lasso Penalized Regression  
 http://arxiv.org/pdf/0803.3876.pdf
