@@ -42,7 +42,7 @@ Y = model.sample(X, n=100000)
 The API is inspired by [Keras](https://github.com/fchollet/keras) which allows continued model training, so you can inspect your model...
 
 ```python
-model.set_params(learning_rate=0.1, n_iter=5)
+model = SparseGaussianCRF(learning_rate=0.1, n_iter=5)
 model.fit(X_train, Y_train)
 loss = model.lnll
 plt.plot(loss)
