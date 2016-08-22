@@ -3,6 +3,7 @@
 
 SGCRFpy is a Python implementation of Sparse Gaussian Conditional Random Fields (CRF) with a familiar API. CRFs are discriminative graphical models that are useful for performing inference when output variables are known to obey a structure.
 
+## Background
 A Gaussian CRF models the conditional probability density of `y` given `x` as
 
 ![alt tag](http://latex.codecogs.com/svg.latex?p(y|x;\\Lambda,\\Theta) = \\frac{e^{-y^\\top \\Lambda y -2 x^\\top \\Theta y}}{Z(x)})
