@@ -8,7 +8,7 @@ from numpy import random as rng
 
 from sgcrf import SparseGaussianCRF
 
-def test_theata_0():
+def test_theta_0():
     rng.seed(0)
     n_samples = 100
     Y = rng.randn(n_samples, 5)
