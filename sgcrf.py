@@ -113,7 +113,7 @@ class SparseGaussianCRF(BaseEstimator):
 
         # stuff for line search
         self.beta = 0.5
-        self.slack = 0.05
+        self.slack = 0.000000001
 
 
     def fit(self, X, Y):
@@ -259,6 +259,23 @@ class SparseGaussianCRF(BaseEstimator):
         return nll_a <= nll_b
 
 
+    def check_descent3(self, newton_lambda, alpha, fixed, vary):
+        """
+        check if we have made suffcient descent
+
+        we do this by checking if the difference between the loss at the
+        old point and at the new point is large enough compared to some reference
+        """
+        rhs = np.trace(np.dot(self.grad_wrt_Lam(fixed, vary), newton_lambda)) + \
+               self.lamL * self.l1_norm_off_diag(self.Lam + newton_lambda) - \
+               self.lamL * self.l1_norm_off_diag(self.Lam)
+
+        lhs = self.l1_neg_log_likelihood_wrt_Lam(self.Lam + alpha * newton_lambda, fixed, vary) -\
+              self.l1_neg_log_likelihood_wrt_Lam(self.Lam, fixed, vary)
+
+        return lhs <= alpha * self.slack * rhs
+
+
     def check_descent2(self, newton_lambda, alpha, fixed, vary):
 
         lhs = self.l1_neg_log_likelihood(self.Lam + alpha*newton_lambda, self.Theta, fixed, vary)
@@ -276,13 +293,13 @@ class SparseGaussianCRF(BaseEstimator):
         alpha = self.learning_rate
         while True:
             pd, L = check_pd(self.Lam + alpha * newton_lambda)
-            if pd and self.check_descent(newton_lambda, alpha, fixed, vary):
+            if pd and self.check_descent3(newton_lambda, alpha, fixed, vary):
                 # step is positive definite and we have sufficient descent
                 break
                 #TODO maybe want to return newt+alpha, to reuse computation
-            alpha = alpha * self.beta
             # if alpha < 0.1:
             #   return L, alpha
+            alpha = alpha * self.beta
         return L, alpha
 
 
@@ -352,6 +369,11 @@ class SparseGaussianCRF(BaseEstimator):
         fixed = FixedParams(Sxx=np.dot(X.T, X) / n,
                             Syy=np.dot(Y.T, Y) / n,
                             Sxy=np.dot(X.T, Y) / n)
+
+        # cov = np.cov(X.T, Y.T)
+        # fixed = FixedParams(Sxx=cov[:p, :p],
+        #                     Syy=cov[p:, p:],
+        #                     Sxy=cov[p:, :p])
 
         # allow for continued fitting
         if self.Lam is None:
@@ -468,4 +490,5 @@ class SparseGaussianCRF(BaseEstimator):
 
     def set_params(self, **parameters):
         for parameter, value in parameters.items():
-            self.setattr(parameter, value)
+            setattr(self, parameter, value)
+            # self.setattr(parameter, value)
